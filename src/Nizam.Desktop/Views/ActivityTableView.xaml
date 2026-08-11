@@ -1,0 +1,31 @@
+<UserControl x:Class="Nizam.Desktop.Views.ActivityTableView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Belge: Aktivite tablosu — ActivityTableViewModel -->
+  <DockPanel Margin="12">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+      <TextBox Text="{Binding NewCode}" Width="80" ToolTip="Kod" Margin="0,0,4,0" />
+      <TextBox Text="{Binding NewName}" Width="180" ToolTip="Ad" Margin="0,0,4,0" />
+      <TextBox Text="{Binding NewDurationDays}" Width="60" ToolTip="Süre (gün)" Margin="0,0,8,0" />
+      <Button Content="{Binding NewActivityLabel}" Command="{Binding NewActivityCommand}" Margin="0,0,8,0" />
+      <Button Content="{Binding SaveLabel}" Command="{Binding SaveCommand}" Margin="0,0,8,0" />
+      <Button Content="{Binding DeleteLabel}" Command="{Binding DeleteCommand}" Margin="0,0,8,0" />
+      <Button Content="{Binding RunScheduleLabel}" Command="{Binding RunScheduleCommand}" Margin="0,0,8,0" />
+      <Button Content="{Binding AddFsLabel}" Command="{Binding AddFsRelationshipCommand}" />
+    </StackPanel>
+    <DataGrid ItemsSource="{Binding Activities}"
+              SelectedItem="{Binding SelectedActivity}"
+              AutoGenerateColumns="False"
+              CanUserAddRows="False">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="{Binding DataContext.CodeColumn, RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding Code}" Width="90" />
+        <DataGridTextColumn Header="{Binding DataContext.NameColumn, RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding Name}" Width="*" />
+        <DataGridTextColumn Header="{Binding DataContext.DurationColumn, RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding DurationDays}" Width="70" />
+        <DataGridTextColumn Header="{Binding DataContext.StartColumn, RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding Start, StringFormat=dd.MM.yyyy}" Width="100" />
+        <DataGridTextColumn Header="{Binding DataContext.FinishColumn, RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding Finish, StringFormat=dd.MM.yyyy}" Width="100" />
+        <DataGridTextColumn Header="{Binding DataContext.FloatColumn, RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding TotalFloatDays}" Width="100" />
+        <DataGridCheckBoxColumn Header="{Binding DataContext.CriticalColumn, RelativeSource={RelativeSource AncestorType=UserControl}}" Binding="{Binding IsCritical}" Width="70" />
+      </DataGrid.Columns>
+    </DataGrid>
+  </DockPanel>
+</UserControl>

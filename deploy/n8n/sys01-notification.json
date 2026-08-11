@@ -1,0 +1,60 @@
+{
+  "name": "SYS01 Nizam Notification Stub",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "nizam-outbox",
+        "httpMethod": "POST",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-nizam-outbox",
+      "name": "Nizam Outbox Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "nizam-outbox"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body ?? $json;\nreturn [{ json: { received: true, type: body.type ?? body.Type ?? 'unknown', at: new Date().toISOString() } }];"
+      },
+      "id": "normalize-payload",
+      "name": "Normalize Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 0]
+    },
+    {
+      "parameters": {
+        "content": "## Nizam SYS01\nStub workflow: receives outbox webhook events (PROJECT_CREATED, SCHEDULE_CALCULATED, etc.) and acknowledges them. Replace this with email/Slack/Teams notification nodes.",
+        "height": 240,
+        "width": 360
+      },
+      "id": "sticky-note",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-40, -220]
+    }
+  ],
+  "connections": {
+    "Nizam Outbox Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

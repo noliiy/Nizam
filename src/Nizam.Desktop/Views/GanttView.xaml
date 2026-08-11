@@ -1,0 +1,24 @@
+<UserControl x:Class="Nizam.Desktop.Views.GanttView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Belge: Gantt görünümü — GanttViewModel + VirtualizedGanttLayout -->
+  <DockPanel Margin="12">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+      <TextBlock Text="{Binding DataDateLabel}" VerticalAlignment="Center" Margin="0,0,8,0" />
+      <DatePicker SelectedDate="{Binding DataDate}" Margin="0,0,12,0" />
+      <Button Content="{Binding ZoomDayLabel}" Command="{Binding SetZoomCommand}" CommandParameter="Day" Margin="0,0,4,0" />
+      <Button Content="{Binding ZoomWeekLabel}" Command="{Binding SetZoomCommand}" CommandParameter="Week" Margin="0,0,4,0" />
+      <Button Content="{Binding ZoomMonthLabel}" Command="{Binding SetZoomCommand}" CommandParameter="Month" Margin="0,0,12,0" />
+      <Button Content="Veri Tarihini Uygula" Command="{Binding ApplyDataDateCommand}" />
+    </StackPanel>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="280" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+      <ListBox Grid.Column="0" ItemsSource="{Binding Bars}" DisplayMemberPath="Name" />
+      <!-- Timeline canvas: VisibleRects (X,Y,Width,Height) ile sanal çizim -->
+      <Canvas Grid.Column="1" Background="#F8FAFC" ClipToBounds="True" />
+    </Grid>
+  </DockPanel>
+</UserControl>

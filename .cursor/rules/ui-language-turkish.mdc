@@ -1,0 +1,13 @@
+---
+description: Nizam UI language is Turkish (tr-TR)
+alwaysApply: true
+---
+
+# Nizam — Uygulama Dili
+
+Nizam uygulamasının kullanıcı arayüzü dili **Türkçe** (`tr-TR`) olacaktır.
+
+- Menüler, etiketler, butonlar, durum metinleri, bildirimler, hata mesajları ve rapor başlıkları Türkçe yazılır.
+- Kod kimlikleri (class, property, API route, enum adları) İngilizce kalabilir.
+- Kullanıcıya görünen tüm string’ler Türkçe olmalıdır.
+- i18n sonraya bırakılsa bile varsayılan locale `tr-TR` kabul edilir.
