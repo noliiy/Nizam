@@ -71,6 +71,11 @@ public sealed class CreateProgressUpdateHandler : IRequestHandler<CreateProgress
             ?? throw new NotFoundException("Aktivite bulunamadı.");
 
         var now = _clock.UtcNow;
+        var effectivePercent = request.ActualFinish is not null ? 100m : request.PercentComplete;
+        var effectiveRemaining = request.ActualFinish is not null
+            ? 0
+            : request.RemainingDurationMinutes;
+
         var update = new ProgressUpdate
         {
             Id = Guid.NewGuid(),
@@ -79,8 +84,8 @@ public sealed class CreateProgressUpdateHandler : IRequestHandler<CreateProgress
             ActivityId = request.ActivityId,
             ActualStart = request.ActualStart,
             ActualFinish = request.ActualFinish,
-            PercentComplete = request.PercentComplete,
-            RemainingDurationMinutes = request.RemainingDurationMinutes,
+            PercentComplete = effectivePercent,
+            RemainingDurationMinutes = effectiveRemaining,
             Notes = request.Notes,
             CreatedAt = now,
             CreatedByUserId = _currentUser.UserId
@@ -116,15 +121,13 @@ public sealed class CreateProgressUpdateHandler : IRequestHandler<CreateProgress
             project.PercentComplete = all.Average(a => a.PercentComplete);
         project.UpdatedAt = now;
 
-        await _db.SaveChangesAsync(cancellationToken);
-
         await _audit.WriteAsync(
             project.OrganizationId,
             nameof(ProgressUpdate),
             update.Id.ToString(),
             "Created",
             projectId: project.Id,
-            newValue: request.PercentComplete.ToString("0.##"),
+            newValue: effectivePercent.ToString("0.##"),
             cancellationToken: cancellationToken);
 
         await _outbox.EnqueueAsync("PROGRESS_UPDATED", new ProgressUpdatedEvent
@@ -136,6 +139,8 @@ public sealed class CreateProgressUpdateHandler : IRequestHandler<CreateProgress
             PercentComplete = activity.PercentComplete,
             UpdatedAt = now
         }, cancellationToken);
+
+        await _db.SaveChangesAsync(cancellationToken);
 
         return new ProgressUpdateDto(
             update.Id, update.ActivityId, update.ActualStart, update.ActualFinish,

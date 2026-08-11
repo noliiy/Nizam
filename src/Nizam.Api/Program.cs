@@ -82,6 +82,7 @@ try
                     "Doğrulama hatası",
                     ave.Errors.ToArray()),
                 NotFoundException nf => (StatusCodes.Status404NotFound, nf.Message, Array.Empty<string>()),
+                ForbiddenException fb => (StatusCodes.Status403Forbidden, fb.Message, Array.Empty<string>()),
                 ConflictException cf => (StatusCodes.Status409Conflict, cf.Message, Array.Empty<string>()),
                 Nizam.Domain.Exceptions.DomainException de => (
                     StatusCodes.Status400BadRequest,

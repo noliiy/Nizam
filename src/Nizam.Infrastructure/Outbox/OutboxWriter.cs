@@ -5,6 +5,10 @@ using Nizam.Infrastructure.Persistence;
 
 namespace Nizam.Infrastructure.Outbox;
 
+/// <summary>
+/// Stages outbox messages on the shared DbContext. Callers must SaveChanges
+/// in the same unit of work as business changes (transactional outbox).
+/// </summary>
 public sealed class OutboxWriter : IOutboxWriter
 {
     private readonly NizamDbContext _db;
@@ -21,7 +25,7 @@ public sealed class OutboxWriter : IOutboxWriter
         _clock = clock;
     }
 
-    public async Task EnqueueAsync(string type, object payload, CancellationToken cancellationToken = default)
+    public Task EnqueueAsync(string type, object payload, CancellationToken cancellationToken = default)
     {
         _db.OutboxMessages.Add(new OutboxMessage
         {
@@ -30,10 +34,14 @@ public sealed class OutboxWriter : IOutboxWriter
             Payload = JsonSerializer.Serialize(payload, JsonOptions),
             CreatedAt = _clock.UtcNow
         });
-        await _db.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 }
 
+/// <summary>
+/// Stages audit rows on the shared DbContext. Callers must SaveChanges
+/// in the same unit of work as business changes.
+/// </summary>
 public sealed class AuditService : IAuditService
 {
     private readonly NizamDbContext _db;
@@ -47,7 +55,7 @@ public sealed class AuditService : IAuditService
         _currentUser = currentUser;
     }
 
-    public async Task WriteAsync(
+    public Task WriteAsync(
         Guid organizationId,
         string entityType,
         string entityId,
@@ -70,6 +78,6 @@ public sealed class AuditService : IAuditService
             NewValue = newValue,
             Timestamp = _clock.UtcNow
         });
-        await _db.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 }

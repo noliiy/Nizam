@@ -61,6 +61,9 @@ public sealed class CreateProjectHandler : IRequestHandler<CreateProjectCommand,
 
     public async Task<ProjectDto> Handle(CreateProjectCommand request, CancellationToken cancellationToken)
     {
+        await TenantAuthorization.EnsureOrganizationAccessAsync(
+            _db, _currentUser, request.OrganizationId, cancellationToken);
+
         var orgExists = await _db.Organizations.AnyAsync(o => o.Id == request.OrganizationId, cancellationToken);
         if (!orgExists)
             throw new NotFoundException("Organizasyon bulunamadı.");
@@ -157,8 +160,6 @@ public sealed class CreateProjectHandler : IRequestHandler<CreateProjectCommand,
             UpdatedAt = now
         });
 
-        await _db.SaveChangesAsync(cancellationToken);
-
         await _audit.WriteAsync(
             request.OrganizationId,
             nameof(Project),
@@ -177,6 +178,8 @@ public sealed class CreateProjectHandler : IRequestHandler<CreateProjectCommand,
             CreatedAt = now
         }, cancellationToken);
 
+        await _db.SaveChangesAsync(cancellationToken);
+
         return Map(project);
     }
 
@@ -190,14 +193,18 @@ public sealed record GetProjectQuery(Guid ProjectId) : IRequest<ProjectDto>;
 public sealed class GetProjectHandler : IRequestHandler<GetProjectQuery, ProjectDto>
 {
     private readonly IApplicationDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
-    public GetProjectHandler(IApplicationDbContext db) => _db = db;
+    public GetProjectHandler(IApplicationDbContext db, ICurrentUser currentUser)
+    {
+        _db = db;
+        _currentUser = currentUser;
+    }
 
     public async Task<ProjectDto> Handle(GetProjectQuery request, CancellationToken cancellationToken)
     {
-        var p = await _db.Projects.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == request.ProjectId, cancellationToken)
-            ?? throw new NotFoundException("Proje bulunamadı.");
+        var p = await TenantAuthorization.EnsureProjectAccessAsync(
+            _db, _currentUser, request.ProjectId, cancellationToken, tracking: false);
         return CreateProjectHandler.Map(p);
     }
 }
@@ -207,11 +214,19 @@ public sealed record ListProjectsQuery(Guid OrganizationId) : IRequest<IReadOnly
 public sealed class ListProjectsHandler : IRequestHandler<ListProjectsQuery, IReadOnlyList<ProjectDto>>
 {
     private readonly IApplicationDbContext _db;
+    private readonly ICurrentUser _currentUser;
 
-    public ListProjectsHandler(IApplicationDbContext db) => _db = db;
+    public ListProjectsHandler(IApplicationDbContext db, ICurrentUser currentUser)
+    {
+        _db = db;
+        _currentUser = currentUser;
+    }
 
     public async Task<IReadOnlyList<ProjectDto>> Handle(ListProjectsQuery request, CancellationToken cancellationToken)
     {
+        await TenantAuthorization.EnsureOrganizationAccessAsync(
+            _db, _currentUser, request.OrganizationId, cancellationToken);
+
         var list = await _db.Projects.AsNoTracking()
             .Where(p => p.OrganizationId == request.OrganizationId)
             .OrderBy(p => p.ProjectCode)
@@ -235,23 +250,24 @@ public sealed class SetDataDateHandler : IRequestHandler<SetDataDateCommand, Pro
     private readonly IApplicationDbContext _db;
     private readonly IDateTime _clock;
     private readonly IAuditService _audit;
+    private readonly ICurrentUser _currentUser;
 
-    public SetDataDateHandler(IApplicationDbContext db, IDateTime clock, IAuditService audit)
+    public SetDataDateHandler(IApplicationDbContext db, IDateTime clock, IAuditService audit, ICurrentUser currentUser)
     {
         _db = db;
         _clock = clock;
         _audit = audit;
+        _currentUser = currentUser;
     }
 
     public async Task<ProjectDto> Handle(SetDataDateCommand request, CancellationToken cancellationToken)
     {
-        var project = await _db.Projects.FirstOrDefaultAsync(p => p.Id == request.ProjectId, cancellationToken)
-            ?? throw new NotFoundException("Proje bulunamadı.");
+        var project = await TenantAuthorization.EnsureProjectAccessAsync(
+            _db, _currentUser, request.ProjectId, cancellationToken);
 
         var old = project.DataDate?.ToString("O");
         project.DataDate = DateTime.SpecifyKind(request.DataDate, DateTimeKind.Unspecified);
         project.UpdatedAt = _clock.UtcNow;
-        await _db.SaveChangesAsync(cancellationToken);
 
         await _audit.WriteAsync(
             project.OrganizationId,
@@ -262,6 +278,8 @@ public sealed class SetDataDateHandler : IRequestHandler<SetDataDateCommand, Pro
             project.DataDate?.ToString("O"),
             project.Id,
             cancellationToken);
+
+        await _db.SaveChangesAsync(cancellationToken);
 
         return CreateProjectHandler.Map(project);
     }

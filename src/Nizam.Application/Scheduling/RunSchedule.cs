@@ -181,8 +181,6 @@ public sealed class RunScheduleHandler : IRequestHandler<RunScheduleCommand, Sch
         run.ProjectFinish = result.ProjectFinish;
         run.Error = null;
 
-        await _db.SaveChangesAsync(cancellationToken);
-
         await _audit.WriteAsync(
             project.OrganizationId,
             nameof(ScheduleRun),
@@ -201,6 +199,8 @@ public sealed class RunScheduleHandler : IRequestHandler<RunScheduleCommand, Sch
             CriticalCount = result.CriticalActivityIds.Count,
             CalculatedAt = completed
         }, cancellationToken);
+
+        await _db.SaveChangesAsync(cancellationToken);
 
         return new ScheduleRunDto(run.RunId, project.Id, run.ProjectFinish, run.Status, run.ActivityCount, null);
     }

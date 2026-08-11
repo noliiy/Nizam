@@ -6,6 +6,7 @@ using Nizam.Application.Common;
 using Nizam.Automation.Contracts.Events;
 using Nizam.Domain.Entities;
 using Nizam.Domain.Enums;
+using Nizam.Scheduling.Calendars;
 
 namespace Nizam.Application.Baselines;
 
@@ -149,8 +150,6 @@ public sealed class CreateBaselineHandler : IRequestHandler<CreateBaselineComman
             });
         }
 
-        await _db.SaveChangesAsync(cancellationToken);
-
         await _audit.WriteAsync(
             project.OrganizationId,
             nameof(Baseline),
@@ -168,6 +167,8 @@ public sealed class CreateBaselineHandler : IRequestHandler<CreateBaselineComman
             Name = baseline.Name,
             CreatedAt = now
         }, cancellationToken);
+
+        await _db.SaveChangesAsync(cancellationToken);
 
         return new BaselineDto(
             baseline.Id, baseline.ProjectId, baseline.Name,
@@ -198,15 +199,16 @@ public sealed class CompareBaselineHandler : IRequestHandler<CompareBaselineQuer
             .ToDictionaryAsync(a => a.Id, cancellationToken);
 
         var variances = new List<ActivityVarianceDto>();
+        var calendar = WorkingCalendar.CreateStandard5x8();
         foreach (var snap in snaps)
         {
             current.TryGetValue(snap.ActivityId, out var act);
             int? startVar = null;
             int? finishVar = null;
             if (snap.EarlyStart is not null && act?.EarlyStart is not null)
-                startVar = (int)(act.EarlyStart.Value - snap.EarlyStart.Value).TotalMinutes;
+                startVar = WorkingVarianceMinutes(calendar, snap.EarlyStart.Value, act.EarlyStart.Value);
             if (snap.EarlyFinish is not null && act?.EarlyFinish is not null)
-                finishVar = (int)(act.EarlyFinish.Value - snap.EarlyFinish.Value).TotalMinutes;
+                finishVar = WorkingVarianceMinutes(calendar, snap.EarlyFinish.Value, act.EarlyFinish.Value);
 
             variances.Add(new ActivityVarianceDto(
                 snap.ActivityId,
@@ -223,5 +225,15 @@ public sealed class CompareBaselineHandler : IRequestHandler<CompareBaselineQuer
         }
 
         return new BaselineCompareDto(baseline.Id, baseline.ProjectId, baseline.Name, variances);
+    }
+
+    /// <summary>
+    /// Signed working-time variance: positive means current is later than baseline.
+    /// </summary>
+    public static int WorkingVarianceMinutes(WorkingCalendar calendar, DateTime baseline, DateTime current)
+    {
+        if (current >= baseline)
+            return calendar.CalculateWorkingDuration(baseline, current);
+        return -calendar.CalculateWorkingDuration(current, baseline);
     }
 }
