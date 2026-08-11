@@ -1,13 +1,15 @@
 ---
-description: Nizam UI language is Turkish (tr-TR)
+description: Nizam UI is Turkish-first with localization resources
 alwaysApply: true
 ---
 
-# Nizam — Uygulama Dili
+# Nizam — Uygulama Dili (Master Prompt §4–§5)
 
-Nizam uygulamasının kullanıcı arayüzü dili **Türkçe** (`tr-TR`) olacaktır.
+Kaynak: `/Users/emreerdem/Desktop/Nizam/Documents/secondPrompt.txt`
 
-- Menüler, etiketler, butonlar, durum metinleri, bildirimler, hata mesajları ve rapor başlıkları Türkçe yazılır.
-- Kod kimlikleri (class, property, API route, enum adları) İngilizce kalabilir.
-- Kullanıcıya görünen tüm string’ler Türkçe olmalıdır.
-- i18n sonraya bırakılsa bile varsayılan locale `tr-TR` kabul edilir.
+- Varsayılan dil/locale: **Türkçe / `tr-TR`**
+- Kullanıcıya görünen tüm metinler başlangıçta Türkçe tasarlanır
+- Kod kimlikleri (class, property, API route, enum) İngilizce kalabilir
+- **Views / ViewModels içine Türkçe string hardcode etme** — localization resource kullan
+- Tarih: `dd.MM.yyyy`; sayılar/para birimi Türkçe format; Türkçe büyük/küçük harf (i/İ/I/ı) ve arama/sıralama doğru olsun
+- Mimari gün 1’den i18n desteklemeli (ileride EN, DE, CS, AR, RU)
