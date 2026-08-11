@@ -55,5 +55,5 @@ TestResults/
 [Tt]est[Rr]esult*/
 *.trx
 
-# Cursor
-.cursor/cache/
+# Cursor (local agent rules — not published)
+.cursor/
