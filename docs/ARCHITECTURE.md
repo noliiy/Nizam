@@ -1,8 +1,7 @@
 # NIZAM — Chief Architect Blueprint
 
 **Product:** Nizam — Enterprise Project Controls  
-**Primary client:** Windows desktop (WPF)  
-**UI language:** Turkish (`tr-TR`) — all user-facing labels, menus, messages, notifications, errors, and report titles  
+**Primary client:** Windows desktop (WPF)    
 **Code identifiers:** English (types, APIs, routes); display strings Turkish  
 **Branch context:** `section-78` — architecture only; no implementation code in this document’s companion deliverable set.  
 **Status:** Approved architectural baseline for MVP → Phase 5
